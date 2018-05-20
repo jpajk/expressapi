@@ -13,7 +13,8 @@ let emailValidator = [
 const User = new Schema({
   email: { type: String, required: true, validate: emailValidator },
   password: { type: String, required: true },
-  admin: { type: String, required: true }
+  admin: { type: String, required: true },
+  token: { type: String }
 })
 
 User.statics.findByEmail = function (email, cb) {
@@ -35,8 +36,8 @@ User.statics.createWithPassword = async function (email, password) {
   })
 }
 
-User.statics.findWithPassword = function (email, password, cb) {
-  //
+User.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password)
 }
 
 export default mongoose.model('User', User)

@@ -1,6 +1,9 @@
 
 import { Router } from 'express'
+import jwt from 'jsonwebtoken'
+
 import User from '../models/User'
+import config from '../config'
 
 const router = Router()
 
@@ -10,41 +13,62 @@ router.get('/', function (req, res) {
   })
 })
 
-router.post('/register', function (req, res) {
+router.post('/register', async function (req, res) {
   let email = req.body.email || false
   let password = req.body.password || false
 
-  new Promise((resolve, reject) => {
-    User.findByEmail(email, (err, user) => {
-      if (err) { throw err }
+  let existingUser = await User.findByEmail(email)
 
-      if (user) {
-        return reject(new Error('The user already exists'))
-      }
+  if (existingUser) {
+    return res.error('The user already exists')
+  }
 
-      resolve()
+  let newUser = await User.createWithPassword(email, password)
+
+  newUser.save(err => {
+    if (err) {
+      return res.error(err.message)
+    }
+
+    res.success({
+      message: 'Register success'
     })
-  }).then(() => {
-    let userPromise = User.createWithPassword(email, password)
-
-    userPromise.then(user => {
-      user.save((err) => {
-        if (err) {
-          return res.error(err.message)
-        }
-
-        res.success({
-          message: 'Register success'
-        })
-      })
-    })
-  }).catch(err => {
-    res.error(err.message)
   })
 })
 
-router.get('/login', function (req, res) {
-  res.json('went great')
+router.post('/login', async function (req, res) {
+  let email = req.body.email || false
+  let password = req.body.password || false
+
+  let user = await User.findByEmail(email)
+
+  if (!user) {
+    return res.error('Wrong email or password.')
+  }
+
+  let result = await user.comparePassword(password)
+
+  if (!result) {
+    return res.error('Wrong email or password.')
+  }
+
+  let payload = {
+    admin: user.admin
+  }
+
+  let token = await jwt.sign(payload, config.secret, {
+    expiresIn: 60
+  })
+
+  user.token = token
+  user.save()
+
+  res.success({
+    message: 'Login successful',
+    data: {
+      token
+    }
+  })
 })
 
 export default router
