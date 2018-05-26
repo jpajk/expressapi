@@ -22,7 +22,7 @@ gulp.task('transpile', function () {
 
 gulp.task('nodemon', function () {
   nodemon({
-    script: './build/app.js',
+    script: './build/server.js',
     ext: 'js html',
     env: { 'NODE_ENV': 'development' }
   })

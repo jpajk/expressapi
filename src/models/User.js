@@ -13,14 +13,16 @@ let emailValidator = [
 const User = new Schema({
   email: { type: String, required: true, validate: emailValidator },
   password: { type: String, required: true },
-  admin: { type: String, required: true },
+  admin: { type: Boolean, required: true },
   token: { type: String }
 })
 
 User.statics.findByEmail = function (email, cb) {
-  return this
-    .model('User')
-    .findOne({ email }, cb)
+  return this.model('User').findOne({ email }, cb)
+}
+
+User.statics.findByToken = function (token, cb) {
+  return this.model('User').findOne({ token }, cb)
 }
 
 User.statics.createWithPassword = async function (email, password) {

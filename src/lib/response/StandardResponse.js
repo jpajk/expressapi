@@ -1,7 +1,7 @@
 
 class StandardResponse {
   constructor ({ status, message, data }) {
-    this.status = status || 1
+    this.status = status === 0 ? status : 1
     this.message = message || ''
     this.data = data || {}
   }
