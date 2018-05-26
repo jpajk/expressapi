@@ -19,6 +19,8 @@ export default async function (req, res, next) {
 
     if (user) {
       req.user = user
+    } else {
+      return res.clientError('Could not find the user')
     }
 
     next()
