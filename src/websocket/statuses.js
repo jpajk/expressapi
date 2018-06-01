@@ -1,13 +1,31 @@
 
-import User from '../models/User'
+import Status, { StatusEvents } from '../models/Status'
+
+const statusQuery = function (cb) {
+  Status.find()
+    .limit(10)
+    .sort({ created: -1 })
+    .exec((err, result) => {
+      if (err) {
+        throw err
+      }
+
+      cb(result)
+    })
+}
 
 export default {
   route: '/statuses',
-  handler: function (ws) {
-    let stream = User.find().stream()
+  handler: async function (ws) {
+    statusQuery((statuses) => {
+      ws.send(JSON.stringify(statuses))
+    })
 
-    stream.on('data', (data) => {
-      ws.send(JSON.stringify(data))
+    StatusEvents.on('status.saved', () => {
+      console.log('query saved')
+      statusQuery((statuses) => {
+        ws.send(JSON.stringify(statuses))
+      })
     })
   }
 }
