@@ -22,7 +22,6 @@ export default {
     })
 
     StatusEvents.on('status.saved', () => {
-      console.log('query saved')
       statusQuery((statuses) => {
         ws.send(JSON.stringify(statuses))
       })

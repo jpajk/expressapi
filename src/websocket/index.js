@@ -1,6 +1,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import url from 'url'
 import WebSocket from 'ws'
 
 const websocketsPath = './build/websocket/'
@@ -29,7 +30,11 @@ export default function (server) {
   const wss = new WebSocket.Server({ server })
 
   wss.on('connection', (ws, req) => {
-    let handler = dispatchWebsocketRoute(req.url)
+    let socketRoute = url.parse(req.url, true)
+
+    let socketPathName = socketRoute.pathname
+    console.log('my token', socketRoute.query.token)
+    let handler = dispatchWebsocketRoute(socketPathName)
 
     if (handler) {
       handler(ws)
